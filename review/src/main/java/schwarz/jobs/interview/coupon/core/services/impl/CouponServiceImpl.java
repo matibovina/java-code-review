@@ -1,5 +1,6 @@
 package schwarz.jobs.interview.coupon.core.services.impl;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -19,14 +20,16 @@ public class CouponServiceImpl implements CouponService {
 
     private final CouponRepository couponRepository;
 
-    // --- NEW CODE
     @Override
     public BasketBO applyCouponDiscount(final BasketBO basket, final String code) {
 
-        final Coupon coupon = couponRepository.findByCode(code).orElseThrow(
+        final Coupon coupon = couponRepository.findByCode(code.toUpperCase()).orElseThrow(
                 () -> new InvalidDiscountException("Coupon not found for code: " + code));
 
-        if (basket.getValue().doubleValue() == 0 || basket.getValue().compareTo(coupon.getMinBasketValue()) < 0) {
+        if (isExpired(coupon)) {
+            basket.setApplicationSuccessful(false);
+            throw new InvalidDiscountException("Coupon " + code + " is not active.");
+        } else if (basket.getValue().doubleValue() == 0 || basket.getValue().compareTo(coupon.getMinBasketValue()) < 0) {
             basket.setApplicationSuccessful(false);
         } else {
             basket.applyDiscount(coupon.getDiscount());
@@ -34,17 +37,20 @@ public class CouponServiceImpl implements CouponService {
         return basket;
     }
 
-    // --- NEW CODE
     @Override
     public Coupon createCoupon(final Coupon coupon) {
+        coupon.setCode(coupon.getCode().toUpperCase());
         return couponRepository.save(coupon);
     }
 
-    // --- NEW CODE
     @Override
     @Transactional(readOnly = true)
     public List<Coupon> getCoupons(final CouponRequestDTO couponRequestDTO) {
 
         return couponRepository.findByCodeIn(couponRequestDTO.getCodes());
+    }
+
+    private boolean isExpired(Coupon coupon) {
+        return (coupon.getExpirationDate() != null && coupon.getExpirationDate().isBefore(LocalDate.now()));
     }
 }

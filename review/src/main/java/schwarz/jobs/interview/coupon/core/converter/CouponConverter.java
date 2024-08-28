@@ -6,7 +6,6 @@ import schwarz.jobs.interview.coupon.core.model.BasketBO;
 import schwarz.jobs.interview.coupon.web.dto.BasketDTO;
 import schwarz.jobs.interview.coupon.web.dto.CouponDTO;
 
-// --- NEW CODE
 @Component
 public class CouponConverter {
 
@@ -19,11 +18,11 @@ public class CouponConverter {
                 .build();
     }
 
-    public BasketDTO convertToBasketDTO(BasketBO basket) {
+    public BasketDTO convertToBasketDTO(BasketBO basketBO) {
         BasketDTO basketDTO = new BasketDTO();
-        basketDTO.setValue(basket.getValue());
-        basketDTO.setAppliedDiscount(basket.getAppliedDiscount());
-        basketDTO.setApplicationSuccessful(basket.isApplicationSuccessful());
+        basketDTO.setValue(basketBO.getValue());
+        basketDTO.setAppliedDiscount(basketBO.getAppliedDiscount());
+        basketDTO.setApplicationSuccessful(basketBO.isApplicationSuccessful());
         return basketDTO;
     }
 
@@ -32,14 +31,16 @@ public class CouponConverter {
                 .code(coupon.getCode())
                 .discount(coupon.getDiscount())
                 .minBasketValue(coupon.getMinBasketValue())
+                .expirationDate(coupon.getExpirationDate())
                 .build();
     }
 
-    public Coupon convertToCoupon(CouponDTO coupon) {
+    public Coupon convertToCoupon(CouponDTO couponDTO) {
         return Coupon.builder()
-                .code(coupon.getCode())
-                .discount(coupon.getDiscount())
-                .minBasketValue(coupon.getMinBasketValue())
+                .code(couponDTO.getCode())
+                .discount(couponDTO.getDiscount())
+                .minBasketValue(couponDTO.getMinBasketValue())
+                .expirationDate(couponDTO.getExpirationDate())
                 .build();
     }
 }

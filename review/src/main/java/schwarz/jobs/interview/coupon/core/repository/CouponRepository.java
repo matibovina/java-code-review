@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import schwarz.jobs.interview.coupon.core.domain.Coupon;
 
-@Repository // --- NEW CODE
+@Repository
 public interface CouponRepository extends JpaRepository<Coupon, Long> {
 
     Optional<Coupon> findByCode(final String code);

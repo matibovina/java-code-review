@@ -4,13 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import schwarz.jobs.interview.coupon.core.domain.Coupon;
+import schwarz.jobs.interview.coupon.core.exception.InvalidDiscountException;
 import schwarz.jobs.interview.coupon.core.model.BasketBO;
 import schwarz.jobs.interview.coupon.core.repository.CouponRepository;
 import schwarz.jobs.interview.coupon.core.services.impl.CouponServiceImpl;
@@ -53,19 +54,21 @@ class CouponServiceImplTest {
                 .code("12345")
                 .discount(BigDecimal.TEN)
                 .minBasketValue(BigDecimal.valueOf(50))
+                .expirationDate(LocalDate.now().minusDays(1))
                 .build();
 
         coupon2 = Coupon.builder()
                 .code("1111")
                 .discount(BigDecimal.TEN)
                 .minBasketValue(BigDecimal.valueOf(100))
+                .expirationDate(LocalDate.now().plusDays(5))
                 .build();
 
         basketBO = BasketBO.builder()
                 .value(BigDecimal.valueOf(100))
                 .build();
 
-        when(couponRepository.findByCode("1111")).thenReturn(Optional.of(coupon2));
+        when(couponRepository.findByCode(anyString())).thenReturn(Optional.of(coupon2));
     }
 
     @Test
@@ -79,6 +82,7 @@ class CouponServiceImplTest {
         assertEquals(coupon.getCode(), result.getCode());
         assertEquals(coupon.getDiscount(), result.getDiscount());
         assertEquals(coupon.getMinBasketValue(), result.getMinBasketValue());
+        assertEquals(coupon.getExpirationDate(), result.getExpirationDate());
         verify(couponRepository, times(1)).save(any());
 
 
@@ -97,7 +101,7 @@ class CouponServiceImplTest {
     }
 
     @Test
-    void test_apply_coupon_method() {
+    void shouldNotApplyDiscountValue0() {
 
         basketBO.setValue(BigDecimal.valueOf(0));
 
@@ -114,10 +118,26 @@ class CouponServiceImplTest {
 
         basketBO.setValue(BigDecimal.valueOf(100));
 
-        assertThatThrownBy(() -> {
-            couponServiceImpl.applyCouponDiscount(basketBO, "11");
-        }).isInstanceOf(RuntimeException.class)
+        when(couponRepository.findByCode(anyString())).thenReturn(Optional.empty());
+
+
+        assertThatThrownBy(() ->
+                couponServiceImpl.applyCouponDiscount(basketBO, "11"))
+                .isInstanceOf(InvalidDiscountException.class)
                 .hasMessage("Coupon not found for code: 11");
+    }
+
+    @Test
+    void shouldThrowInvalidDiscountExceptionExpiredCoupon() {
+
+        basketBO.setValue(BigDecimal.valueOf(100));
+
+        when(couponRepository.findByCode(anyString())).thenReturn(Optional.of(coupon));
+
+        assertThatThrownBy(() ->
+                couponServiceImpl.applyCouponDiscount(basketBO, "12345"))
+                .isInstanceOf(InvalidDiscountException.class)
+                .hasMessage("Coupon 12345 is not active.");
     }
 
     @Test

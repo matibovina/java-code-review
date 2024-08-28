@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import schwarz.jobs.interview.coupon.core.converter.CouponConverter;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -25,12 +24,12 @@ class CouponResourceTest {
 
     @Test
     void shouldApplyDiscountToBasket() throws Exception {
-        String applicationRequestDTO = "{ \"basket\": { \"value\": 100 }, \"code\": \"TEST1\" }";
+        String applicationRequestDTO = "{ \"basket\": { \"value\": 100 }, \"code\": \"TEST2\" }";
 
         mockMvc.perform(post("/api/basket")
                         .contentType("application/json")
                         .content(applicationRequestDTO))
-                .andExpect(content().json("{\"value\":90,\"appliedDiscount\":10,\"applicationSuccessful\":true}"))
+                .andExpect(content().json("{\"value\":85,\"appliedDiscount\":15,\"applicationSuccessful\":true}"))
                 .andExpect(status().isOk());
     }
 
@@ -46,7 +45,7 @@ class CouponResourceTest {
 
     @Test
     void shouldReturnIsConflict() throws Exception {
-        String applicationRequestDTO = "{ \"basket\": { \"value\": 10 }, \"code\": \"TEST1\" }";
+        String applicationRequestDTO = "{ \"basket\": { \"value\": 10 }, \"code\": \"TEST2\" }";
         mockMvc.perform(post("/api/basket")
                         .contentType("application/json")
                         .content(applicationRequestDTO))
@@ -65,7 +64,7 @@ class CouponResourceTest {
 
     @Test
     void shouldCreateCoupon() throws Exception {
-        String couponDTO = "{ \"code\": \"TEST5\", \"discount\": 20, \"minBasketValue\": 100 }";
+        String couponDTO = "{ \"code\": \"TEST5\", \"discount\": 20, \"minBasketValue\": 100,\"expirationDate\":\"2024-12-31\" }";
         mockMvc.perform(post("/api/coupons")
                         .contentType("application/json")
                         .content(couponDTO))
@@ -80,9 +79,9 @@ class CouponResourceTest {
                         .contentType("application/json")
                         .content(coupons))
                 .andExpect(content().json(
-                        "[{\"discount\":10,\"code\":\"TEST1\",\"minBasketValue\":50}" +
-                                ",{\"discount\":15,\"code\":\"TEST2\",\"minBasketValue\":100}" +
-                                ",{\"discount\":20,\"code\":\"TEST3\",\"minBasketValue\":200}]"
+                        "[{\"discount\":10,\"code\":\"TEST1\",\"minBasketValue\":50,\"expirationDate\":\"2024-01-31\"}," +
+                                "{\"discount\":15,\"code\":\"TEST2\",\"minBasketValue\":100,\"expirationDate\":\"2025-01-31\"}," +
+                                "{\"discount\":20,\"code\":\"TEST3\",\"minBasketValue\":200,\"expirationDate\":\"2025-06-30\"}]"
                 ))
                 .andExpect(status().isOk());
     }

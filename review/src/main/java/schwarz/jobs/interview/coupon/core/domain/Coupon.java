@@ -1,6 +1,7 @@
 package schwarz.jobs.interview.coupon.core.domain;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -18,18 +19,20 @@ import lombok.NoArgsConstructor;
 public class Coupon {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) //---NEW CODE
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull //---NEW CODE
-    @Column(unique = true) //---NEW CODE
+    @NotNull
+    @Column(unique = true)
     private String code;
 
-    @NotNull //---NEW CODE
-    @Column(precision = 10, scale = 2) //---NEW CODE
+    @NotNull
+    @Column(precision = 10, scale = 2)
     private BigDecimal discount;
 
-    @Column(precision = 10, scale = 2) //---NEW CODE
+    @Column(precision = 10, scale = 2)
     private BigDecimal minBasketValue;
+
+    private LocalDate expirationDate;
 
 }
