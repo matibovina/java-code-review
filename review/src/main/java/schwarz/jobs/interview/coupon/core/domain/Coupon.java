@@ -2,9 +2,8 @@ package schwarz.jobs.interview.coupon.core.domain;
 
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,15 +18,18 @@ import lombok.NoArgsConstructor;
 public class Coupon {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //---NEW CODE
     private Long id;
 
-    @Column(name = "code")
+    @NotNull //---NEW CODE
+    @Column(unique = true) //---NEW CODE
     private String code;
 
-    @Column(name = "discount", precision = 10, scale = 2)
+    @NotNull //---NEW CODE
+    @Column(precision = 10, scale = 2) //---NEW CODE
     private BigDecimal discount;
 
-    @Column(name = "minBasketValue", precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2) //---NEW CODE
     private BigDecimal minBasketValue;
 
 }
